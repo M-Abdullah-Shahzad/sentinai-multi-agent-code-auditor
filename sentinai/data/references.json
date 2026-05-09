@@ -1,0 +1,27 @@
+[
+  {
+    "title": "OWASP Top Ten - Injection",
+    "source": "OWASP",
+    "text": "Injection flaws, such as SQL injection, occur when untrusted data is sent to an interpreter as part of a command or query. The attacker’s hostile data can trick the interpreter into executing unintended commands or accessing unauthorized data."
+  },
+  {
+    "title": "OWASP Top Ten - XSS",
+    "source": "OWASP",
+    "text": "Cross-site scripting (XSS) allows attackers to inject client-side scripts into web pages viewed by other users. XSS can be used to bypass access controls such as the same-origin policy."
+  },
+  {
+    "title": "CWE-798 - Use of Hard-coded Credentials",
+    "source": "CWE",
+    "text": "The software contains hard-coded credentials, such as passwords or cryptographic keys, which can be easily guessed or exposed. This can lead to unauthorized access to resources."
+  },
+  {
+    "title": "Python AST",
+    "source": "Python Documentation",
+    "text": "The ast module helps Python applications to process trees of the Python abstract syntax grammar. It can be used to parse, analyze, and transform Python source code."
+  },
+  {
+    "title": "Esprima JavaScript Parser",
+    "source": "Esprima",
+    "text": "Esprima is a high performance, standard-compliant ECMAScript parser written in JavaScript. It can be used to generate syntax trees for analysis and transformations."
+  }
+]

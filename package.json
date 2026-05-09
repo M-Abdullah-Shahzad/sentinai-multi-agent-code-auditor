@@ -1,0 +1,9 @@
+{
+  "name": "sentinai-js-parser",
+  "version": "1.0.0",
+  "description": "JavaScript parser helper for SentinAI using Esprima",
+  "private": true,
+  "dependencies": {
+    "esprima": "^4.0.1"
+  }
+}
