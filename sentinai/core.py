@@ -1,6 +1,6 @@
 import json
-from .agents import sentinai_graph, get_llm
-from .parsers import parse_uploaded_file
+
+from .agents import get_llm, sentinai_graph
 from .rag import ReferenceRetriever
 
 
@@ -9,38 +9,43 @@ class SentinAICore:
         self.retriever = ReferenceRetriever()
 
     def validate(self):
-        # We can do a quick check to see if the LLM provider can be initialized
         try:
             get_llm()
             return None
-        except Exception as e:
-            raise RuntimeError(f"LLM initialization failed: {e}")
+        except Exception as exc:
+            raise RuntimeError(f"LLM initialization failed: {exc}") from exc
 
     def analyze(self, source_files):
-        # We can still parse locally, though the Master Prompt asks the LLM to act as a Parser Agent too.
-        # We'll pass the files as requested.
-        initial_state = {
-            "source_files": source_files,
-            "errors": []
-        }
-        
+        if not source_files:
+            raise RuntimeError("Upload at least one supported Python or JavaScript file.")
+
+        query = "\n\n".join(
+            f"{item.get('name', '')}\n{str(item.get('content', ''))[:1200]}"
+            for item in source_files
+        )[:8000]
+
+        retrieval_warning = None
         try:
-            # Run the LangGraph workflow
-            result_state = sentinai_graph.invoke(initial_state)
-            
-            if result_state.get("errors"):
-                raise RuntimeError("Graph execution errors: " + ", ".join(result_state["errors"]))
-                
-            # Parse the JSON if it exists
-            final_json = {}
-            if result_state.get("final_json"):
-                final_json = json.loads(result_state["final_json"])
-                
+            references = self.retriever.retrieve(query, k=4)
+        except Exception as exc:
+            references = []
+            retrieval_warning = (
+                "Local reference retrieval was unavailable; specialist agents continued "
+                f"without retrieved references ({type(exc).__name__})."
+            )
+
+        try:
+            result_state = sentinai_graph.invoke({
+                "source_files": source_files,
+                "rag_references": references,
+                "errors": [],
+            })
+            final_json = json.loads(result_state.get("final_json", "{}"))
             return {
                 "final_report": result_state.get("final_report", ""),
                 "final_json": final_json,
                 "files": source_files,
-                "llm_fallback_reason": None,
+                "llm_fallback_reason": retrieval_warning,
             }
         except Exception as exc:
-            raise RuntimeError(f"Analysis failed: {str(exc)}")
+            raise RuntimeError(f"Analysis failed: {exc}") from exc
