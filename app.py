@@ -32,7 +32,7 @@ else:
             })
 
         report = None
-        with st.spinner("Analyzing code with SentinAI Multi-Agent Workflow..."):
+        with st.spinner("Running static parsing, reference retrieval, and specialist review agents..."):
             try:
                 report = core.analyze(source_files)
             except RuntimeError as exc:
