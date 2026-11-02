@@ -113,6 +113,16 @@ Open `http://localhost:8501`.
 - `sentinai/data/references.json` — curated local reference data
 - `tests/` — automated unit tests
 
+## Tests
+
+Run the unit tests with:
+
+```bash
+pytest -q
+```
+
+The tests cover response parsing, deterministic severity scoring, and local parser behavior. They do not make live LLM calls.
+
 ## Important limitations
 
 - LLM findings can be incomplete or incorrect; manually validate important results.
