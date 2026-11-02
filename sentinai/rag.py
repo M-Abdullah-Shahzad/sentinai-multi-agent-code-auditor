@@ -1,6 +1,6 @@
 import json
 import os
-from typing import List
+
 import chromadb
 
 from .config import CHROMA_DB_DIR, EMBEDDING_MODEL
@@ -12,7 +12,8 @@ def _load_references():
     if not os.path.exists(path):
         return []
     with open(path, "r", encoding="utf-8") as handle:
-        return json.load(handle)
+        data = json.load(handle)
+    return data if isinstance(data, list) else []
 
 
 class ReferenceRetriever:
@@ -24,22 +25,49 @@ class ReferenceRetriever:
         collection_name = "sentinai_references"
         embeddings = SentenceTransformerEmbeddings(EMBEDDING_MODEL)
         try:
-            return self.client.get_collection(collection_name)
+            return self.client.get_collection(
+                name=collection_name,
+                embedding_function=embeddings,
+            )
         except Exception:
-            collection = self.client.create_collection(name=collection_name, embedding_function=embeddings)
+            collection = self.client.create_collection(
+                name=collection_name,
+                embedding_function=embeddings,
+            )
             refs = _load_references()
             if refs:
                 ids, texts, metadatas = [], [], []
                 for idx, item in enumerate(refs):
+                    if not isinstance(item, dict) or not item.get("text"):
+                        continue
                     ids.append(str(idx))
-                    texts.append(item["text"])
-                    metadatas.append({"title": item["title"], "source": item["source"]})
-                collection.add(ids=ids, documents=texts, metadatas=metadatas)
+                    texts.append(str(item["text"]))
+                    metadatas.append({
+                        "title": str(item.get("title", "Reference")),
+                        "source": str(item.get("source", "")),
+                    })
+                if ids:
+                    collection.add(ids=ids, documents=texts, metadatas=metadatas)
             return collection
 
     def retrieve(self, query: str, k: int = 4):
-        hits = self.collection.query(query_texts=[query], n_results=k)
+        if not query or not query.strip():
+            return []
+        available = self.collection.count()
+        if available <= 0:
+            return []
+        hits = self.collection.query(
+            query_texts=[query],
+            n_results=min(max(1, int(k)), available),
+        )
+        documents = (hits.get("documents") or [[]])[0]
+        metadatas = (hits.get("metadatas") or [[]])[0]
         results = []
-        for doc, metadata in zip(hits["documents"][0], hits["metadatas"][0]):
-            results.append({"title": metadata.get("title", "Reference"), "snippet": doc[:320], "source": metadata.get("source")})
+        for doc, metadata in zip(documents, metadatas):
+            metadata = metadata or {}
+            results.append({
+                "title": metadata.get("title", "Reference"),
+                "snippet": str(doc)[:320],
+                "source": metadata.get("source"),
+            })
         return results
