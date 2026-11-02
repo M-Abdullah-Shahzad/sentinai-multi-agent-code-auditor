@@ -34,4 +34,6 @@ jobs:
         run: npm ci
 
       - name: Run unit tests
-        run: pytest -q
+        env:
+          PYTHONPATH: .
+        run: python -m pytest -q
