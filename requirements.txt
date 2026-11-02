@@ -1,6 +1,6 @@
-streamlit>=1.26
+streamlit>=1.32
 chromadb>=0.4.0
-openai>=0.28.0
+openai>=1.0
 groq
 python-dotenv>=1.0.0
 pyyaml>=6.0
@@ -8,7 +8,9 @@ jinja2>=3.1.0
 sentence-transformers>=3.4.1
 langgraph>=0.0.26
 langchain>=0.1.11
+langchain-core
 langchain-groq>=0.0.1
 langchain-openai>=0.0.8
 pydantic>=2.6.3
 markdown-pdf>=1.13.1
+pytest>=8.0
