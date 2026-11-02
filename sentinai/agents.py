@@ -82,7 +82,10 @@ def static_parser_node(state: SentinAIState) -> dict[str, Any]:
     """Run the local Python AST / JavaScript parser before AI review."""
     summaries = []
     for item in state.get("source_files", []):
-        result = parse_uploaded_file(item)
+        try:
+            result = parse_uploaded_file(item)
+        except Exception as exc:
+            result = {"error": f"Local parser failed: {type(exc).__name__}"}
         result.pop("ast", None)
         summaries.append({
             "file": item.get("name", "unknown"),
